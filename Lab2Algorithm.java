@@ -1,4 +1,5 @@
-
+import java.lang.management.ManagementFactory;
+import com.sun.management.ThreadMXBean;
 import java.util.Random;
 public class Lab2Algorithm {
     public static void moveZeroesNaive(int[] array) {
@@ -77,28 +78,40 @@ public class Lab2Algorithm {
         int size = 100000;
         int[] originalArray = generateRandomArray(size);
 
-        System.out.println("=== Перевірка пам'яті (Space Complexity) ===");
+        System.out.println(" Перевірка пам'яті (Space Complexity) через ThreadMXBean");
+        ThreadMXBean threadBean = (ThreadMXBean) ManagementFactory.getThreadMXBean();
+// Отримуємо ID поточного потоку
+        long threadId = Thread.currentThread().getId();
 
-        int[] testArray1 = originalArray.clone();
-        System.gc();
-        long memoryBefore1 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        moveZeroesNaive(testArray1);
-        long memoryAfter1 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        System.out.println("Рівень 1 (Наївний) - Пам'ять: " + Math.max(0, memoryAfter1 - memoryBefore1) + " байт");
 
-        int[] testArray2 = originalArray.clone();
-        System.gc();
-        long memoryBefore2 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        int[] result2 = moveZeroesGreedy(testArray2);
-        long memoryAfter2 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        System.out.println("Рівень 2 (Жадібний) - Пам'ять: " + Math.max(0, memoryAfter2 - memoryBefore2) + " байт");
+        System.out.println("--- Рівень 1 (Наївний) ---");
+        for (int round = 1; round <= 3; round++) {
+            int[] testArray1 = originalArray.clone();
+            long memoryBefore = threadBean.getThreadAllocatedBytes(threadId);
+            moveZeroesNaive(testArray1);
+            long memoryAfter = threadBean.getThreadAllocatedBytes(threadId);
+            System.out.println("Ітерація " + round + " | Пам'ять: " + (memoryAfter - memoryBefore) + " байт");
+        }
 
-        int[] testArray3 = originalArray.clone();
-        System.gc();
-        long memoryBefore3 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        moveZeroesOptimal(testArray3);
-        long memoryAfter3 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        System.out.println("Рівень 3 (Оптимальний) - Пам'ять: " + Math.max(0, memoryAfter3 - memoryBefore3) + " байт\n");
+
+        System.out.println("--- Рівень 2 (Жадібний) ---");
+        for (int round = 1; round <= 3; round++) {
+            int[] testArray2 = originalArray.clone();
+            long memoryBefore = threadBean.getThreadAllocatedBytes(threadId);
+            int[] result2 = moveZeroesGreedy(testArray2);
+            long memoryAfter = threadBean.getThreadAllocatedBytes(threadId);
+            System.out.println("Ітерація " + round + " | Пам'ять: " + (memoryAfter - memoryBefore) + " байт");
+        }
+
+
+        System.out.println("--- Рівень 3 (Оптимальний) ---");
+        for (int round = 1; round <= 3; round++) {
+            int[] testArray3 = originalArray.clone();
+            long memoryBefore = threadBean.getThreadAllocatedBytes(threadId);
+            moveZeroesOptimal(testArray3);
+            long memoryAfter = threadBean.getThreadAllocatedBytes(threadId);
+            System.out.println("Ітерація " + round + " | Пам'ять: " + (memoryAfter - memoryBefore) + " байт");
+        }
 
         System.out.println("=== Перевірка Хешування ===");
         String[] words = new String[1000];
